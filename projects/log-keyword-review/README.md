@@ -1,6 +1,6 @@
 # Project 4 — Log keyword review
 
-A small helper counts selected words in a text log. Start with the sample fixture at tests/fixtures/sample.log. Do not commit real system logs; they may contain sensitive data.
+A small helper counts lines matching common keywords in a text log (not every repeated occurrence within a line). Start with the sample fixture at tests/fixtures/sample.log. Do not commit real system logs; they may contain sensitive data.
 
 ## Run it
 

@@ -9,6 +9,9 @@ Build these in order. Each one reinforces several lessons at once. Begin inside 
 | System health report | functions, commands, redirection, reports | [Open guide](system-health-report/README.md) |
 | Log keyword review | grep, counting, error handling, privacy | [Open guide](log-keyword-review/README.md) |
 | Backup with checksums | archive creation, manifests, verification | [Open guide](backup-with-checksums/README.md) |
+| File integrity check | SHA-256 manifests, diff, change detection | [Open guide](file-integrity-check/README.md) |
+| TLS certificate expiry | OpenSSL, date arithmetic, alert thresholds | [Open guide](certificate-expiry-check/README.md) |
+| Service status | loops, validation, exit codes, systemctl | [Open guide](service-status/README.md) |
 
 ## Capstone: admin toolkit
 

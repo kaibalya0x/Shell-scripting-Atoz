@@ -24,6 +24,7 @@ make_manifest() {
     for file in "${files[@]}"; do sha256sum -- "$file" >> "$output" || return 1; done
 }
 if [[ $mode == --create ]]; then
+    [[ ! -e $baseline && ! -L $baseline ]] || { echo "Baseline already exists; choose a new path." >&2; exit 2; }
     temp=$(mktemp "$parent/.manifest.XXXXXX") || { echo "Cannot create temporary manifest." >&2; exit 2; }
     trap 'rm -f -- "$temp"' EXIT
     make_manifest "$temp" || { echo "Could not create a complete manifest." >&2; exit 2; }

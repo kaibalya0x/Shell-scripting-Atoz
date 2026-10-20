@@ -1,49 +1,38 @@
 #!/usr/bin/env bash
-# Create a timestamped tar.gz and SHA-256 manifest; source files are not changed.
-set -o nounset
-set -o pipefail
+# Create a compressed backup and SHA-256 manifest; source files stay unchanged.
+set -o nounset -o pipefail
 
-source_dir=''
-destination_dir=''
-
+src=''; dest=''
 while (($#)); do
-    case "$1" in
-        --source) (($# >= 2)) || { printf 'Missing source path\n' >&2; exit 2; }; source_dir=$2; shift 2 ;;
-        --destination) (($# >= 2)) || { printf 'Missing destination path\n' >&2; exit 2; }; destination_dir=$2; shift 2 ;;
-        --help|-h) printf 'Usage: %s --source DIR --destination DIR\n' "$0"; exit 0 ;;
-        *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
+    case $1 in
+        --source|--destination)
+            (($# >= 2)) || { echo "Missing value for $1" >&2; exit 2; }
+            if [[ $1 == --source ]]; then src=$2; else dest=$2; fi
+            shift 2 ;;
+        --help|-h) echo "Usage: $0 --source DIR --destination EXISTING_DIR"; exit 0 ;;
+        *) echo "Unknown argument: $1" >&2; exit 2 ;;
     esac
 done
-
-[[ -n $source_dir && -n $destination_dir ]] || {
-    printf 'Both --source and --destination are required.\n' >&2
-    exit 2
-}
-[[ -d $source_dir ]] || { printf 'Source directory not found.\n' >&2; exit 2; }
-[[ -d $destination_dir ]] || { printf 'Destination directory must already exist.\n' >&2; exit 2; }
-
-source_abs=$(cd -- "$source_dir" && pwd -P) || exit 2
-destination_abs=$(cd -- "$destination_dir" && pwd -P) || exit 2
-[[ $source_abs != / ]] || { printf 'Refusing to back up filesystem root.\n' >&2; exit 2; }
-case "$destination_abs/" in
-    "$source_abs/"*) printf 'Destination must not be inside source.\n' >&2; exit 2 ;;
-esac
-
+[[ -n $src && -n $dest && -d $src && -d $dest ]] || { echo "Source and destination must be existing directories." >&2; exit 2; }
+src=$(cd -- "$src" && pwd -P) || exit 2
+dest=$(cd -- "$dest" && pwd -P) || exit 2
+[[ $src != / ]] || { echo "Refusing to back up filesystem root." >&2; exit 2; }
+case "$dest/" in "$src/"*) echo "Destination must be outside source." >&2; exit 2 ;; esac
+command -v tar >/dev/null 2>&1 || { echo "tar is required." >&2; exit 2; }
+if command -v sha256sum >/dev/null 2>&1; then hash_tool=sha256sum
+elif command -v shasum >/dev/null 2>&1; then hash_tool=shasum
+else echo "sha256sum or shasum is required." >&2; exit 2; fi
 stamp=$(date '+%Y%m%d-%H%M%S')
-archive="$destination_abs/backup-$stamp.tar.gz"
-if ! tar -czf "$archive" -C "$(dirname -- "$source_abs")" -- "$(basename -- "$source_abs")"; then
-    printf 'Backup archive creation failed.\n' >&2
-    rm -f -- "$archive"
-    exit 1
+archive="$dest/backup-$stamp.tar.gz"
+manifest="$archive.sha256"
+[[ ! -e $archive && ! -e $manifest ]] || { echo "Backup name already exists; retry shortly." >&2; exit 1; }
+if ! tar -czf "$archive" -C "$(dirname -- "$src")" -- "$(basename -- "$src")"; then
+    rm -f -- "$archive"; echo "Backup failed; partial archive removed." >&2; exit 1
 fi
-
-if command -v sha256sum >/dev/null 2>&1; then
-    (cd -- "$destination_abs" && sha256sum "$(basename -- "$archive")" > "$(basename -- "$archive").sha256")
-elif command -v shasum >/dev/null 2>&1; then
-    (cd -- "$destination_abs" && shasum -a 256 "$(basename -- "$archive")" > "$(basename -- "$archive").sha256")
+if [[ $hash_tool == sha256sum ]]; then
+    (cd -- "$dest" && sha256sum "$(basename -- "$archive")" > "$(basename -- "$manifest")")
 else
-    printf 'Archive created, but no SHA-256 tool was found.\n' >&2
-    exit 1
-fi
-
-printf 'Archive: %s\nChecksum: %s.sha256\n' "$archive" "$archive"
+    (cd -- "$dest" && shasum -a 256 "$(basename -- "$archive")" > "$(basename -- "$manifest")")
+fi || { rm -f -- "$manifest"; echo "Could not write checksum manifest." >&2; exit 1; }
+echo "Archive: $archive"
+echo "Checksum: $manifest"

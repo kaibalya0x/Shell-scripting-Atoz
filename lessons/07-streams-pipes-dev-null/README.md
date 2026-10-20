@@ -8,8 +8,8 @@ Every process normally has three standard streams:
 
 ## Redirect output
 
-    printf 'normal output\n' > normal.txt
-    printf 'another line\n' >> normal.txt
+    echo 'normal output' > normal.txt
+    echo 'another line' >> normal.txt
 
 A single > replaces a file's contents. >> appends. Be cautious: the wrong target can overwrite useful data.
 
@@ -41,8 +41,8 @@ A pipeline does not automatically prove every command succeeded. Bash's pipefail
 
 /dev/null is a special device that discards anything written to it. Reading from it returns end-of-file immediately. Think of it as a sink, not storage.
 
-    printf 'You will not see this line\n' > /dev/null
-    printf 'This line is visible\n'
+    echo 'You will not see this line' > /dev/null
+    echo 'This line is visible'
 
 Output:
 

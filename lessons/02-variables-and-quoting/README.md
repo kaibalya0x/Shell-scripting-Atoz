@@ -4,7 +4,7 @@ Variables let a script keep a value and reuse it. In Bash, do not put spaces aro
 
     service_name='ssh'
     check_date=$(date +%F)
-    printf 'Checking %s on %s\n' "$service_name" "$check_date"
+    echo "Checking $service_name on $check_date"
 
 The date in the output will be the day you run it.
 
@@ -19,8 +19,8 @@ The date in the output will be the day you run it.
 Single quotes preserve characters literally. Double quotes still allow variable expansion and command substitution.
 
     name='Alex'
-    printf '%s\n' 'Hello, $name'
-    printf '%s\n' "Hello, $name"
+    echo 'Hello, $name'
+    echo "Hello, $name"
 
 Output:
 
@@ -30,7 +30,7 @@ Output:
 ## Why quote variables?
 
     file_name='monthly report.txt'
-    printf 'File: %s\n' "$file_name"
+    echo "File: $file_name"
 
 The quotes preserve the filename as one argument even though it has a space. Unquoted expansions can undergo word splitting and pathname expansion. That can turn one intended argument into several, or expand wildcard characters unexpectedly.
 
@@ -39,7 +39,7 @@ A good default is "$variable" and "${array[@]}" unless you deliberately need spl
 ## Default values
 
     log_dir=${LOG_DIR:-"$HOME/logs"}
-    printf 'Logs will be read from: %s\n' "$log_dir"
+    echo "Logs will be read from: $log_dir"
 
 The :- form uses the fallback when LOG_DIR is unset or empty. It does not create the directory.
 

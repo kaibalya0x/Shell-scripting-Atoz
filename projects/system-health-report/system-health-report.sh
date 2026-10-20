@@ -1,53 +1,43 @@
 #!/usr/bin/env bash
-# Collect a small, read-only host status report.
-set -o nounset
-set -o pipefail
+# Read-only snapshot of basic host health.
+set -o nounset -o pipefail
 
 output=''
-
+force=false
 while (($#)); do
-    case "$1" in
-        --output)
-            (($# >= 2)) || { printf 'Missing value for --output\n' >&2; exit 2; }
-            output=$2
-            shift 2
-            ;;
-        --help|-h)
-            printf 'Usage: %s [--output FILE]\n' "$0"
-            exit 0
-            ;;
-        *)
-            printf 'Unknown argument: %s\n' "$1" >&2
-            exit 2
-            ;;
+    case $1 in
+        --output) (($# >= 2)) || { echo "Missing filename for --output." >&2; exit 2; }; output=$2; shift 2 ;;
+        --force) force=true; shift ;;
+        --help|-h) echo "Usage: $0 [--output FILE] [--force]"; echo "--force allows an existing output file to be overwritten."; exit 0 ;;
+        *) echo "Unknown argument: $1" >&2; exit 2 ;;
     esac
 done
 
-generate_report() {
-    printf 'System health report\n'
-    printf 'Generated: %s\n' "$(date '+%F %T %Z')"
-    printf 'Hostname: %s\n' "$(hostname 2>/dev/null || printf 'unknown')"
-    printf '\n-- Uptime --\n'
-    uptime 2>&1 || printf 'uptime information unavailable\n'
-    printf '\n-- Filesystem usage --\n'
-    df -hP 2>&1 || printf 'df information unavailable\n'
-    printf '\n-- Memory --\n'
-    if command -v free >/dev/null 2>&1; then
-        free -h
-    elif [[ -r /proc/meminfo ]]; then
-        sed -n '1,5p' /proc/meminfo
-    else
-        printf 'Memory information unavailable\n'
-    fi
+if [[ -n $output && -e $output && $force != true ]]; then
+    echo "Output already exists; choose another path or use --force: $output" >&2
+    exit 2
+fi
+
+report() {
+    echo "System health report"
+    echo "Generated: $(date '+%F %T %Z')"
+    echo "Hostname: $(hostname 2>/dev/null || echo unknown)"
+    echo
+    echo "-- Uptime --"
+    if command -v uptime >/dev/null 2>&1; then uptime; else echo "uptime command unavailable"; fi
+    echo
+    echo "-- Filesystems --"
+    df -hP || return 1
+    echo
+    echo "-- Memory --"
+    if command -v free >/dev/null 2>&1; then free -h
+    elif [[ -r /proc/meminfo ]]; then head -n 5 /proc/meminfo
+    else echo "Memory information unavailable"; fi
 }
 
 if [[ -n $output ]]; then
-    if generate_report > "$output"; then
-        printf 'Report written to %s\n' "$output"
-    else
-        printf 'Could not write report to %s\n' "$output" >&2
-        exit 1
-    fi
+    report > "$output" || { echo "Report generation failed; check $output." >&2; exit 1; }
+    echo "Report written to $output"
 else
-    generate_report
+    report
 fi

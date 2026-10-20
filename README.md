@@ -35,6 +35,7 @@ A practical, learn-by-doing Bash guide for people learning Linux administration,
 - [07 — Streams, pipes, and `/dev/null`](lessons/07-streams-pipes-dev-null/README.md)
 - [08 — Files, logs, and text tools](lessons/08-files-logs-text-tools/README.md)
 - [09 — Logging, debugging, and safer scripts](lessons/09-logging-debugging-safety/README.md)
+- [10 — Scheduling and automation](lessons/10-scheduling-automation/README.md)
 
 ## Projects
 

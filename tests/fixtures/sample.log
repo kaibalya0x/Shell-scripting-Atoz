@@ -1,0 +1,5 @@
+2026-10-20 INFO service started
+2026-10-20 WARN disk usage rising
+2026-10-20 ERROR cannot read example file
+2026-10-20 WARN failed login for lab-user
+2026-10-20 INFO service stopped

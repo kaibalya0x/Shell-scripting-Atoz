@@ -3,7 +3,7 @@
 ## Read user input
 
     read -r -p 'Which service are you checking? ' service
-    printf 'You entered: %s\n' "$service"
+    echo "You entered: $service"
 
 The -r option prevents backslashes from being treated as escape characters. Quoting the variable preserves spaces in the response.
 
@@ -12,9 +12,9 @@ When input is sensitive, read -r -s hides typing in the terminal. Be careful not
 ## Basic string operations
 
     host='web-01.example.test'
-    printf 'Length: %s\n' "${#host}"
-    printf 'Prefix: %s\n' "${host%%.*}"
-    printf 'Uppercase: %s\n' "${host^^}"
+    echo "Length: ${#host}"
+    echo "Prefix: ${host%%.*}"
+    echo "Uppercase: ${host^^}"
 
 This prints the string length, the text before the first dot, and an uppercase version. The ^^ operator requires a modern Bash version.
 
@@ -25,11 +25,11 @@ String equality is commonly checked with [[ "$a" == "$b" ]]. Prefer [[ ... ]] fo
     tools=('grep' 'awk' 'sed')
     tools+=('find')
 
-    printf 'First tool: %s\n' "${tools[0]}"
-    printf 'Tool count: %s\n' "${#tools[@]}"
+    echo "First tool: ${tools[0]}"
+    echo "Tool count: ${#tools[@]}"
 
     for tool in "${tools[@]}"; do
-        printf 'Reviewing: %s\n' "$tool"
+        echo "Reviewing: $tool"
     done
 
 Array indexes begin at zero. An empty array is valid. Avoid using "$array" when you mean all elements; use "${tools[@]}".

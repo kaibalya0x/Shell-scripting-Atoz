@@ -43,7 +43,7 @@ This works with the sample's whitespace-separated fields. Real logs can use othe
 Do not parse ls output to process filenames. To handle arbitrary filenames, use NUL delimiters where available:
 
     while IFS= read -r -d '' file; do
-        printf 'Found: %s\n' "$file"
+        echo "Found: $file"
     done < <(find . -type f -print0)
 
 ## sed

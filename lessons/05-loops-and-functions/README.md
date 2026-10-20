@@ -6,7 +6,7 @@ Loops repeat work. Functions give a small task a name so it can be reused.
 
     for service in ssh cron
     do
-        printf 'Would check service: %s\n' "$service"
+        echo "Would check service: $service"
     done
 
 This prints two lines. It does not inspect or modify services.
@@ -14,7 +14,7 @@ This prints two lines. It does not inspect or modify services.
 For filenames, prefer arrays or safe loops over parsing plain ls output. A safe pattern for finding files is:
 
     while IFS= read -r -d '' path; do
-        printf 'Found: %s\n' "$path"
+        echo "Found: $path"
     done < <(find . -type f -print0)
 
 The NUL delimiter handles filenames containing spaces, tabs, and newlines. This example requires Bash and a find implementation supporting -print0.
@@ -23,7 +23,7 @@ The NUL delimiter handles filenames containing spaces, tabs, and newlines. This 
 
     count=1
     while (( count <= 3 )); do
-        printf 'Attempt %s\n' "$count"
+        echo "Attempt $count"
         ((count += 1))
     done
 

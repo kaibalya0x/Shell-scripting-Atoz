@@ -38,7 +38,7 @@ A practical, learn-by-doing Bash guide for people learning Linux administration,
 
 ## Projects
 
-See [the project index](projects/README.md): disk-space monitoring, archiving older files, system health reports, log keyword review, and checksum backups.
+See [the project index](projects/README.md) for eight practical projects: disk-space alerts, safe archiving, system health reports, log review, checksum backups, file integrity checks, TLS certificate expiry, and service status.
 
 ## Run an example
 

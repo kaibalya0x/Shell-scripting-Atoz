@@ -17,7 +17,9 @@ case "$baseline" in "$target"/*) echo "Store baseline outside the target directo
 [[ $baseline != "$target" ]] || { echo "Baseline cannot be the target directory." >&2; exit 2; }
 command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required." >&2; exit 2; }
 make_manifest() {
-    local output=$1 file list
+    local output=$1
+    local file
+    local list
     list=$(mktemp) || return 1
     if ! find "$target" -type f -print0 | sort -z > "$list"; then
         rm -f -- "$list"
@@ -25,7 +27,10 @@ make_manifest() {
     fi
     : > "$output" || { rm -f -- "$list"; return 1; }
     while IFS= read -r -d '' file; do
-        sha256sum -- "$file" >> "$output" || { rm -f -- "$list"; return 1; }
+        if ! sha256sum -- "$file" >> "$output"; then
+            rm -f -- "$list"
+            return 1
+        fi
     done < "$list"
     rm -f -- "$list"
 }

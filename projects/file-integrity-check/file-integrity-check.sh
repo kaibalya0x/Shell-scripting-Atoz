@@ -26,13 +26,15 @@ make_manifest() {
         return 1
     fi
     : > "$output" || { rm -f -- "$list"; return 1; }
+    local status=0
     while IFS= read -r -d '' file; do
         if ! sha256sum -- "$file" >> "$output"; then
-            rm -f -- "$list"
-            return 1
+            status=1
+            break
         fi
     done < "$list"
     rm -f -- "$list"
+    return "$status"
 }
 if [[ $mode == --create ]]; then
     [[ ! -e $baseline && ! -L $baseline ]] || { echo "Baseline already exists; choose a new path." >&2; exit 2; }

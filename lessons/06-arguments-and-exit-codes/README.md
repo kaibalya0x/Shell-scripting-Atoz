@@ -2,10 +2,10 @@
 
 Arguments let a user provide data when starting a script.
 
-    printf 'Script name: %s\n' "$0"
-    printf 'First argument: %s\n' "${1-}"
-    printf 'Argument count: %s\n' "$#"
-    printf 'All arguments, preserving each argument:\n'
+    echo "Script name: $0"
+    echo "First argument: ${1-}"
+    echo "Argument count: $#"
+    echo 'All arguments, preserving each argument:'
     printf ' - %s\n' "$@"
 
 Run a saved version with:
@@ -30,7 +30,7 @@ Run a saved version with:
         exit 1
     fi
 
-    printf 'Path exists: %s\n' "$target"
+    echo "Path exists: $target"
 
 Exit status conventions vary by program, but zero generally means success and nonzero means an error or a particular condition. Here, status 2 indicates incorrect usage and 1 indicates a missing path.
 
@@ -39,13 +39,13 @@ Exit status conventions vary by program, but zero generally means success and no
 grep returns 0 when it finds a match, 1 when there is no match, and a higher status when an error occurs.
 
     if grep -q 'ERROR' app.log; then
-        printf 'An ERROR line was found\n'
+        echo 'An ERROR line was found'
     else
         status=$?
         if (( status == 1 )); then
-            printf 'No ERROR line was found\n'
+            echo 'No ERROR line was found'
         else
-            printf 'grep could not complete\n' >&2
+            echo 'grep could not complete' >&2
         fi
     fi
 

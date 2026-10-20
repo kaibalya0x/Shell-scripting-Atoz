@@ -71,10 +71,10 @@ while (($#)); do
     esac
 done
 
-is_percent "$warning" && is_percent "$critical" || {
+if ! is_percent "$warning" || ! is_percent "$critical"; then
     printf 'Thresholds must be whole numbers from 0 to 100.\n' >&2
     exit 3
-}
+fi
 (( warning <= critical )) || {
     printf 'Warning threshold must not exceed critical threshold.\n' >&2
     exit 3

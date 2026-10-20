@@ -41,6 +41,10 @@ A practical, learn-by-doing Bash guide for people learning Linux administration,
 
 See [the project index](projects/README.md) for eight practical projects: disk-space alerts, safe archiving, system health reports, log review, checksum backups, file integrity checks, TLS certificate expiry, and service status.
 
+## Output style
+
+The beginner lessons use `echo` for simple messages because it is easy to read. `printf` remains in examples where column formatting, exact output, or filenames with unusual characters make it the safer choice.
+
 ## Run an example
 
 ```bash

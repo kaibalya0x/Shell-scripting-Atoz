@@ -1,70 +1,59 @@
 #!/usr/bin/env bash
-# Create a tar.gz of files older than N days; never delete source files.
-set -o nounset
-set -o pipefail
+# Archive files older than N full days. Never delete originals.
+set -o nounset -o pipefail
 
 usage() {
-    cat <<'HELP'
-Usage: archive-old-files.sh --source DIR --destination EXISTING_DIR [--days N] [--apply]
-Dry-run is the default. --apply creates an archive but does not remove originals.
-The destination must exist and must not be inside the source directory.
-HELP
+    echo "Usage: $0 --source DIR --destination EXISTING_DIR [--days N] [--apply]"
+    echo "Dry-run is the default; --apply creates an archive but keeps source files."
 }
 
-source_dir=''
-destination_dir=''
+src=''
+dest=''
 days=30
 apply=false
-
 while (($#)); do
-    case "$1" in
-        --source) (($# >= 2)) || { usage >&2; exit 2; }; source_dir=$2; shift 2 ;;
-        --destination) (($# >= 2)) || { usage >&2; exit 2; }; destination_dir=$2; shift 2 ;;
-        --days) (($# >= 2)) || { usage >&2; exit 2; }; days=$2; shift 2 ;;
+    case $1 in
+        --source|--destination|--days)
+            (($# >= 2)) || { usage >&2; exit 2; }
+            case $1 in --source) src=$2 ;; --destination) dest=$2 ;; --days) days=$2 ;; esac
+            shift 2 ;;
         --apply) apply=true; shift ;;
         --help|-h) usage; exit 0 ;;
-        *) printf 'Unknown argument: %s\n' "$1" >&2; usage >&2; exit 2 ;;
+        *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
     esac
 done
 
-[[ -n $source_dir && -n $destination_dir ]] || { usage >&2; exit 2; }
-[[ $days =~ ^[0-9]+$ ]] || { printf 'Days must be a non-negative integer.\n' >&2; exit 2; }
-[[ -d $source_dir ]] || { printf 'Source is not a directory: %s\n' "$source_dir" >&2; exit 2; }
-[[ -d $destination_dir ]] || { printf 'Destination must already exist: %s\n' "$destination_dir" >&2; exit 2; }
+[[ -n $src && -n $dest && $days =~ ^[0-9]+$ ]] || { usage >&2; exit 2; }
+[[ -d $src && -d $dest ]] || { echo "Source and destination must be existing directories." >&2; exit 2; }
+src=$(cd -- "$src" && pwd -P) || exit 2
+dest=$(cd -- "$dest" && pwd -P) || exit 2
+[[ $src != / ]] || { echo "Refusing to archive filesystem root." >&2; exit 2; }
+case "$dest/" in "$src/"*) echo "Destination must be outside source." >&2; exit 2 ;; esac
 
-source_abs=$(cd -- "$source_dir" && pwd -P) || exit 2
-destination_abs=$(cd -- "$destination_dir" && pwd -P) || exit 2
+list=$(mktemp) || { echo "Cannot create temporary file." >&2; exit 2; }
+trap 'rm -f -- "$list"' EXIT
+find "$src" -type f -mtime "+$days" -print0 > "$list" || {
+    echo "Could not list source files." >&2; exit 1;
+}
+mapfile -d '' files < "$list"
+(("${#files[@]}" > 0)) || { echo "No files older than $days full days found."; exit 0; }
 
-case "$destination_abs/" in
-    "$source_abs/"*) printf 'Destination must not be inside the source directory.\n' >&2; exit 2 ;;
-esac
-[[ $source_abs != / ]] || { printf 'Refusing to archive from filesystem root.\n' >&2; exit 2; }
-
-mapfile -d '' files < <(find "$source_abs" -type f -mtime "+$days" -print0)
-if (("${#files[@]}" == 0)); then
-    printf 'No files older than %s days were found.\n' "$days"
-    exit 0
-fi
-
-printf 'Candidates (%s):\n' "${#files[@]}"
+echo "Candidates: ${#files[@]}"
 printf '  %s\n' "${files[@]}"
-
 if [[ $apply != true ]]; then
-    printf '\nDry run only; no archive created and no source files removed.\n'
-    printf 'Review this list, then re-run with --apply to create the archive.\n'
+    echo "Dry run: nothing was archived or deleted. Re-run with --apply after review."
     exit 0
 fi
 
-archive="$destination_abs/archive-$(date '+%Y%m%d-%H%M%S').tar.gz"
-relative_files=()
-for file in "${files[@]}"; do
-    relative_files+=("${file#"$source_abs"/}")
-done
-
-if tar -czf "$archive" -C "$source_abs" -- "${relative_files[@]}"; then
-    printf 'Archive created: %s\n' "$archive"
-    printf 'Original files were left untouched. Verify the archive before any cleanup.\n'
+archive="$dest/archive-$(date '+%Y%m%d-%H%M%S').tar.gz"
+[[ ! -e $archive ]] || { echo "Archive already exists; try again in a second." >&2; exit 1; }
+relative=()
+for file in "${files[@]}"; do relative+=("${file#"$src"/}"); done
+if tar -czf "$archive" -C "$src" -- "${relative[@]}"; then
+    echo "Archive created: $archive"
+    echo "Original files were left untouched."
 else
-    printf 'Archive creation failed.\n' >&2
+    rm -f -- "$archive"
+    echo "Archive failed; partial output removed." >&2
     exit 1
 fi

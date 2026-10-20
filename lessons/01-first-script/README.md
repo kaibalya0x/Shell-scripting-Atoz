@@ -47,7 +47,7 @@ Lines beginning with # are comments, except the shebang has a special meaning at
 ## Try it yourself
 
 1. Print the current date with date.
-2. Print your home directory with printf.
+2. Print your home directory with echo.
 3. Add a comment explaining the script's purpose.
 4. Run it once with bash and once directly after adding execute permission.
 

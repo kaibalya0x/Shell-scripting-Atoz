@@ -13,7 +13,7 @@ while (($#)); do
     esac
 done
 
-if [[ -n $output && -e $output && $force != true ]]; then
+if [[ -n $output && ( -e $output || -L $output ) && $force != true ]]; then
     echo "Output already exists; choose another path or use --force: $output" >&2
     exit 2
 fi

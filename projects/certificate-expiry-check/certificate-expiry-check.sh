@@ -25,10 +25,10 @@ done
     printf 'Provide a hostname containing only letters, digits, dots, and hyphens.\n' >&2
     exit 2
 }
-[[ $port =~ ^[0-9]+$ ]] && (( port >= 1 && port <= 65535 )) || {
+if ! [[ $port =~ ^[0-9]+$ ]] || (( port < 1 || port > 65535 )); then
     printf 'Port must be an integer from 1 to 65535.\n' >&2
     exit 2
-}
+fi
 [[ $warning_days =~ ^[0-9]+$ ]] || {
     printf 'Warning days must be a non-negative integer.\n' >&2
     exit 2

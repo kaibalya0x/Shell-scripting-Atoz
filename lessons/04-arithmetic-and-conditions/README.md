@@ -7,7 +7,7 @@ Bash supports integer arithmetic:
     used=72
     limit=80
     remaining=$((limit - used))
-    printf 'Remaining: %s\n' "$remaining"
+    echo "Remaining: $remaining"
 
 Output:
 
@@ -20,11 +20,11 @@ This is integer math. For decimal calculations, use a tool designed for that tas
     free_percent=18
 
     if (( free_percent < 10 )); then
-        printf 'CRITICAL: very little space remains\n'
+        echo 'CRITICAL: very little space remains'
     elif (( free_percent < 20 )); then
-        printf 'WARNING: disk space is getting low\n'
+        echo 'WARNING: disk space is getting low'
     else
-        printf 'OK: disk space looks healthy\n'
+        echo 'OK: disk space looks healthy'
     fi
 
 Arithmetic conditions are useful for numeric comparisons. For string and file checks, [[ ... ]] is often clearer.
@@ -32,9 +32,9 @@ Arithmetic conditions are useful for numeric comparisons. For string and file ch
     file='report.txt'
 
     if [[ -f "$file" ]]; then
-        printf 'A regular file exists: %s\n' "$file"
+        echo "A regular file exists: $file"
     else
-        printf 'No regular file at: %s\n' "$file"
+        echo "No regular file at: $file"
     fi
 
 ## Logical operators
@@ -42,7 +42,7 @@ Arithmetic conditions are useful for numeric comparisons. For string and file ch
 Inside [[ ... ]], use && for AND and || for OR. For example:
 
     if [[ -r "$file" && -f "$file" ]]; then
-        printf 'Readable regular file\n'
+        echo 'Readable regular file'
     fi
 
 For commands, command_a && command_b runs the second command only if the first succeeds; command_a || command_b runs the second when the first fails. This is about exit statuses, not text output.
@@ -51,8 +51,8 @@ For commands, command_a && command_b runs the second command only if the first s
 
     read -r -p 'Choose start, stop, or status: ' action
     case "$action" in
-        start|stop|status) printf 'Selected action: %s\n' "$action" ;;
-        *) printf 'Unknown action\n' >&2; exit 2 ;;
+        start|stop|status) echo "Selected action: $action" ;;
+        *) echo 'Unknown action' >&2; exit 2 ;;
     esac
 
 This example only recognizes input. It does not start or stop any service.
